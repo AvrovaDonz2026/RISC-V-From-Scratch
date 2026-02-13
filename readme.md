@@ -417,6 +417,9 @@ qemu-system-riscv64 ... -append "init=/bin/sh"  # 单用户模式验证
 - 我确认 rootfs 不包含任何密钥/Token/SSH Key/凭据/私人数据。
 ```
 
+---
+
+
 ### 📜 旧版 README 原文保留区（完整并入）
 
 以下内容来自旧版提交说明，按原意完整保留，便于对照使用。

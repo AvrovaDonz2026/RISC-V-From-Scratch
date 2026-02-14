@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISC-V From Scratch - openRuyi 新手村</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            position: relative;
+        }
+        
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-item:hover::after {
+            width: 100%;
+        }
+        
+        .code-block {
+            background: #1e1e2e;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        
+        .code-block code {
+            color: #cdd6f4;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .scroll-indicator {
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #667eea;
+            color: #667eea;
+        }
+        
+        .route-card {
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .route-card:hover {
+            border-color: #667eea;
+        }
+        
+        .route-card.recommended {
+            border-color: #f59e0b;
+            position: relative;
+        }
+        
+        .route-card.recommended::before {
+            content: '推荐';
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .checklist-item input:checked + label {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+        
+        .github-link {
+            transition: all 0.3s ease;
+        }
+        
+        .github-link:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md shadow-sm z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-microchip text-2xl text-purple-600"></i>
+                    <span class="font-bold text-xl">RISC-V From Scratch</span>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#overview" class="nav-item text-gray-700 hover:text-purple-600 font-medium">项目介绍</a>
+                    <a href="#roadmap" class="nav-item text-gray-700 hover:text-purple-600 font-medium">路线指南</a>
+                    <a href="#faq" class="nav-item text-gray-700 hover:text-purple-600 font-medium">FAQ</a>
+                    <a href="#template" class="nav-item text-gray-700 hover:text-purple-600 font-medium">提交模板</a>
+                </div>
+                <a href="https://github.com/openRuyi-Project/RISC-V-From-Scratch" target="_blank" 
+                   class="github-link flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800">
+                    <i class="fab fa-github text-lg"></i>
+                    <span class="hidden sm:inline font-medium">GitHub</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient min-h-screen flex items-center justify-center pt-16">
+        <div class="max-w-5xl mx-auto px-4 text-center text-white">
+            <div class="mb-6">
+                <span class="inline-block px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-sm font-medium">
+                    🏰 openRuyi 新手村
+                </span>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                从零构建 <span class="text-yellow-300">RISC-V</span><br>Linux 系统
+            </h1>
+            <p class="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
+                亲手打造 riscv64 Linux From Scratch，掌握系统构建的核心技能，<br>
+                加入 openRuyi 操作系统开发之旅
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                <a href="#roadmap" class="px-8 py-4 bg-white text-purple-700 rounded-xl font-semibold text-lg hover:shadow-lg transition-all">
+                    <i class="fas fa-map-marked-alt mr-2"></i>选择你的路线
+                </a>
+                <a href="#overview" class="px-8 py-4 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold text-lg hover:bg-white/30 transition-all border border-white/30">
+                    <i class="fas fa-book mr-2"></i>阅读文档
+                </a>
+            </div>
+            
+            <!-- GitHub Repo Link -->
+            <div class="mb-12">
+                <a href="https://github.com/openRuyi-Project/RISC-V-From-Scratch" target="_blank" 
+                   class="inline-flex items-center space-x-3 px-6 py-3 bg-gray-900/50 backdrop-blur-sm rounded-full text-white hover:bg-gray-900/70 transition-all border border-white/20">
+                    <i class="fab fa-github text-2xl"></i>
+                    <div class="text-left">
+                        <div class="text-xs text-gray-300">openRuyi-Project</div>
+                        <div class="font-semibold">RISC-V-From-Scratch</div>
+                    </div>
+                    <i class="fas fa-external-link-alt text-sm ml-2"></i>
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto text-center">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <div class="text-3xl font-bold text-yellow-300">3+</div>
+                    <div class="text-sm text-white/80">技术路线</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <div class="text-3xl font-bold text-yellow-300">15+</div>
+                    <div class="text-sm text-white/80">常见问题</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <div class="text-3xl font-bold text-yellow-300">4</div>
+                    <div class="text-sm text-white/80">阶段验证</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <div class="text-3xl font-bold text-yellow-300">∞</div>
+                    <div class="text-sm text-white/80">成长可能</div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 scroll-indicator">
+            <i class="fas fa-chevron-down text-white/60 text-2xl"></i>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section id="overview" class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">🎉 欢迎来到新手村</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    这里是通往 <strong>openRuyi 操作系统</strong> 的第一道门槛。通过亲手构建 riscv64 Linux 系统，
+                    你将深入理解 Linux 的基本构成，为参与 openRuyi 开发打下坚实基础。
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="card-hover bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-8">
+                    <div class="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-tools text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">亲手构建</h3>
+                    <p class="text-gray-600">从零开始构建一个可运行的 riscv64 Linux 系统，理解每个组件的作用</p>
+                </div>
+                <div class="card-hover bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8">
+                    <div class="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">深入理解</h3>
+                    <p class="text-gray-600">掌握交叉编译、C库、内核、初始化系统等核心概念</p>
+                </div>
+                <div class="card-hover bg-gradient-to-br from-cyan-50 to-teal-50 rounded-2xl p-8">
+                    <div class="w-14 h-14 bg-cyan-600 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-users text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">加入社区</h3>
+                    <p class="text-gray-600">成为 openRuyi 开发者，与志同道合的伙伴共建 RISC-V 生态</p>
+                </div>
+            </div>
+
+            <!-- GitHub Repository Card -->
+            <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 text-white mb-8">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-white rounded-xl flex items-center justify-center">
+                            <i class="fab fa-github text-4xl text-gray-900"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">openRuyi-Project / RISC-V-From-Scratch</h3>
+                            <p class="text-gray-400 text-sm">通往 openRuyi 操作系统的新手村挑战</p>
+                        </div>
+                    </div>
+                    <a href="https://github.com/openRuyi-Project/RISC-V-From-Scratch" target="_blank"
+                       class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold transition-colors flex items-center space-x-2">
+                        <span>查看仓库</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Three Directory Isolation -->
+            <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-layer-group text-red-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">三元目录隔离（铁律）</h3>
+                        <p class="text-sm text-gray-500">任何偏离此结构的构建都将引入路径污染与权限混乱</p>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border-2 border-purple-200">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-folder text-purple-600"></i>
+                            <span class="font-mono text-sm font-bold text-purple-800">${CLFS}/</span>
+                        </div>
+                        <p class="text-xs text-gray-600">最终目标系统根目录（riscv64 架构）</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-hammer text-blue-600"></i>
+                            <span class="font-mono text-sm font-bold text-blue-800">cross-tools/</span>
+                        </div>
+                        <p class="text-xs text-gray-600">Host 架构可执行文件（x86_64→riscv64 交叉编译器）</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border-2 border-green-200">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-microchip text-green-600"></i>
+                            <span class="font-mono text-sm font-bold text-green-800">tools/</span>
+                        </div>
+                        <p class="text-xs text-gray-600">Target 架构可执行文件（riscv64，通过 QEMU 解释执行）</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border-2 border-orange-200">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-code text-orange-600"></i>
+                            <span class="font-mono text-sm font-bold text-orange-800">sources/</span>
+                        </div>
+                        <p class="text-xs text-gray-600">源码与构建目录（普通用户权限操作）</p>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <h4 class="font-bold text-red-800 mb-2 flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>关键原则
+                    </h4>
+                    <ul class="text-sm text-red-700 space-y-1">
+                        <li>• <code>cross-tools</code> 与 <code>tools</code> <strong>绝对分离</strong></li>
+                        <li>• 所有构建过程不得在 <code>${CLFS}</code> 外安装任何文件</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Version Lock Matrix -->
+            <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-lock text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">版本锁定矩阵</h3>
+                        <p class="text-sm text-gray-500">RISC-V 生态演进快速，必须预先验证以下兼容性</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">组件</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">推荐版本</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">注意事项</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr>
+                                <td class="px-4 py-3 font-medium">QEMU</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">≥ 8.0</span></td>
+                                <td class="px-4 py-3 text-sm text-gray-600">低版本无法正确处理 glibc 2.38+ 的 <code>clone3</code></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">GCC</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm">13.x</span></td>
+                                <td class="px-4 py-3 text-sm text-gray-600">与 Binutils 版本需匹配</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">Binutils</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm">2.42</span></td>
+                                <td class="px-4 py-3 text-sm text-gray-600">-</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">Linux Kernel</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-sm">6.6.x</span></td>
+                                <td class="px-4 py-3 text-sm text-gray-600">头文件版本不必与运行内核完全一致</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-medium">BusyBox</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-sm">1.36.1</span></td>
+                                <td class="px-4 py-3 text-sm text-gray-600">禁用 <code>CONFIG_TC</code> 避免与 Linux 6.6+ 冲突</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Three Stage Methodology -->
+            <div class="bg-gray-900 rounded-2xl p-8 md:p-12 text-white mb-8">
+                <h3 class="text-2xl font-bold mb-8 text-center">🏗️ 三段式构建核心方法论</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="relative pl-8 border-l-2 border-purple-500 timeline-item">
+                        <div class="text-purple-400 font-bold mb-2">Stage 1</div>
+                        <h4 class="text-lg font-semibold mb-2">构建交叉编译器</h4>
+                        <p class="text-gray-400 text-sm">在 x86_64 宿主机上构建 riscv64-unknown-linux-gnu-gcc 工具链</p>
+                    </div>
+                    <div class="relative pl-8 border-l-2 border-blue-500 timeline-item">
+                        <div class="text-blue-400 font-bold mb-2">Stage 2</div>
+                        <h4 class="text-lg font-semibold mb-2">构建临时系统</h4>
+                        <p class="text-gray-400 text-sm">安装内核头文件、C库 (glibc/musl)，重建完整 GCC</p>
+                    </div>
+                    <div class="relative pl-8 border-l-2 border-cyan-500 timeline-item">
+                        <div class="text-cyan-400 font-bold mb-2">Stage 3</div>
+                        <h4 class="text-lg font-semibold mb-2">构建最终系统</h4>
+                        <p class="text-gray-400 text-sm">安装 BusyBox/coreutils、bash、init 系统，配置启动</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Three Passes Compiler Build -->
+            <div class="bg-white rounded-2xl p-8 shadow-lg">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-cogs text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">编译器构建三 Passes（CLFS 正统）</h3>
+                        <p class="text-sm text-gray-500">传承的交叉编译器构建流程</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Pass 1 -->
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm font-bold">Pass 1</span>
+                            <h4 class="font-bold">最小化交叉编译器（无 libc）</h4>
+                        </div>
+                        <div class="code-block p-3 text-sm mb-2">
+                            <code>
+<span class="text-green-400"># Binutils（无依赖）</span><br>
+../binutils-2.42/configure \
+&nbsp;&nbsp;--prefix=${CLFS}/cross-tools \
+&nbsp;&nbsp;--target=${TARGET} \
+&nbsp;&nbsp;--with-sysroot=${CLFS} \
+&nbsp;&nbsp;--disable-nls --disable-werror<br><br>
+<span class="text-green-400"># GCC（仅 C 语言，无 libc）</span><br>
+../gcc-13.2.0/configure \
+&nbsp;&nbsp;--prefix=${CLFS}/cross-tools \
+&nbsp;&nbsp;--target=${TARGET} \
+&nbsp;&nbsp;--with-sysroot=${CLFS} \
+&nbsp;&nbsp;--enable-languages=c \
+&nbsp;&nbsp;--disable-shared --disable-threads --without-headers
+                            </code>
+                        </div>
+                    </div>
+
+                    <!-- Pass 2 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm font-bold">Pass 2</span>
+                            <h4 class="font-bold">C 库安装</h4>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-3 text-sm">
+                            <p class="mb-1"><strong>glibc 路径：</strong>先安装内核头文件，再构建 glibc，使用 Pass 1 GCC</p>
+                            <p><strong>musl 路径：</strong>直接配置，无需预先安装内核头文件</p>
+                        </div>
+                    </div>
+
+                    <!-- Pass 3 -->
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-sm font-bold">Pass 3</span>
+                            <h4 class="font-bold">完整交叉编译器</h4>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-3 text-sm">
+                            <p>重新构建 GCC，启用 <code>--enable-threads=posix</code> 与 <code>--enable-shared</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RISC-V Specifics Section -->
+    <section class="py-16 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-purple-300 font-semibold">⚠️ RISC-V 架构特化要点</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">特殊注意事项</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Page Size -->
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-memory text-white text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">页大小</h4>
+                    <p class="text-gray-300 text-sm mb-3">RISC-V 支持 4KB/16KB/64KB 页大小，但用户态软件常硬编码 4KB 假设</p>
+                    <div class="code-block bg-black/30 p-2 text-xs">
+                        <code class="text-green-300">libc_cv_pagesize=4096</code>
+                    </div>
+                </div>
+
+                <!-- Boot Flow -->
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-play-circle text-white text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">启动流程</h4>
+                    <div class="text-sm text-gray-300 space-y-1">
+                        <div>OpenSBI (M-mode)</div>
+                        <div class="text-gray-500">↓</div>
+                        <div>Linux Kernel (S-mode)</div>
+                        <div class="text-gray-500">↓</div>
+                        <div>init (U-mode)</div>
+                    </div>
+                    <p class="text-xs text-purple-300 mt-2">无需构建 EDK2/UEFI</p>
+                </div>
+
+                <!-- musl Trap -->
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">musl 陷阱</h4>
+                    <p class="text-gray-300 text-sm mb-3">动态链接器默认使用绝对路径，在 chroot 中会导致 "file not found"</p>
+                    <div class="code-block bg-black/30 p-2 text-xs">
+                        <code class="text-green-300">ln -s libc.so ld-musl-riscv64.so.1</code>
+                    </div>
+                </div>
+
+                <!-- RVC -->
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-compress-alt text-white text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">压缩指令集 (RVC)</h4>
+                    <p class="text-gray-300 text-sm mb-3">确保工具链与内核均启用 RVC 支持</p>
+                    <div class="code-block bg-black/30 p-2 text-xs">
+                        <code class="text-green-300">--with-arch=rv64gc</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Init System Selection -->
+    <section class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-purple-600 font-semibold">🎨 Init 系统选择</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">选择你的初始化系统</h2>
+                <p class="text-gray-600">首次构建务必选择 BusyBox 静态链接方案，验证完整启动流程后再引入复杂度</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- BusyBox -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border-2 border-green-200 relative">
+                    <div class="absolute -top-3 left-6 px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">
+                        🏆 首次构建首选
+                    </div>
+                    <div class="flex items-center space-x-3 mb-4 mt-2">
+                        <div class="text-3xl">⭐</div>
+                        <div>
+                            <h3 class="text-xl font-bold">BusyBox init</h3>
+                            <p class="text-green-600 font-medium">低复杂度</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>单二进制文件，极简</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>适合教学验证、嵌入式</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>学习曲线平缓</li>
+                    </ul>
+                    <div class="bg-white rounded-xl p-3 text-xs text-gray-500">
+                        rootfs 大小: ~2-5MB
+                    </div>
+                </div>
+
+                <!-- SysVinit -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border-2 border-blue-200">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="text-3xl">⭐⭐</div>
+                        <div>
+                            <h3 class="text-xl font-bold">SysVinit</h3>
+                            <p class="text-blue-600 font-medium">中等复杂度</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                        <li class="flex items-center"><i class="fas fa-check text-blue-500 mr-2"></i>传统 Unix 启动流程</li>
+                        <li class="flex items-center"><i class="fas fa-check text-blue-500 mr-2"></i>复古系统风格</li>
+                        <li class="flex items-center"><i class="fas fa-check text-blue-500 mr-2"></i>进阶尝试推荐</li>
+                    </ul>
+                    <div class="bg-white rounded-xl p-3 text-xs text-gray-500">
+                        rootfs 大小: ~100MB+
+                    </div>
+                </div>
+
+                <!-- systemd -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="text-3xl">⭐⭐⭐</div>
+                        <div>
+                            <h3 class="text-xl font-bold">systemd</h3>
+                            <p class="text-purple-600 font-medium">高复杂度</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                        <li class="flex items-center"><i class="fas fa-check text-purple-500 mr-2"></i>现代初始化系统</li>
+                        <li class="flex items-center"><i class="fas fa-check text-purple-500 mr-2"></i>最接近发行版体验</li>
+                        <li class="flex items-center"><i class="fas fa-check text-purple-500 mr-2"></i>熟练后挑战</li>
+                    </ul>
+                    <div class="bg-white rounded-xl p-3 text-xs text-gray-500">
+                        rootfs 大小: ~500MB+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Verification Nodes -->
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-purple-600 font-semibold">✅ 阶段性验证节点</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">硬性验证，避免复合故障</h2>
+                <p class="text-gray-600">在关键节点设置硬性验证，确保每一步的错误不扩散</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Node 1 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-t-4 border-purple-500">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-purple-600">1</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">工具链完整性</h4>
+                    <p class="text-sm text-gray-600 mb-3">验证交叉编译器可生成正确的 riscv64 可执行文件</p>
+                    <div class="code-block bg-gray-900 p-2 text-xs rounded">
+                        <code class="text-green-400">file /tmp/test<br><span class="text-gray-400"># ELF 64-bit RISC-V</span></code>
+                    </div>
+                </div>
+
+                <!-- Node 2 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-t-4 border-blue-500">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-blue-600">2</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">Chroot 环境</h4>
+                    <p class="text-sm text-gray-600 mb-3">验证可以进入目标系统并运行基本命令</p>
+                    <div class="code-block bg-gray-900 p-2 text-xs rounded">
+                        <code class="text-green-400">chroot "${CLFS}" \
+/tools/bin/bash \
+-c "gcc --version"</code>
+                    </div>
+                </div>
+
+                <!-- Node 3 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-t-4 border-green-500">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-green-600">3</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">系统启动</h4>
+                    <p class="text-sm text-gray-600 mb-3">使用单用户模式验证系统可正常启动</p>
+                    <div class="code-block bg-gray-900 p-2 text-xs rounded">
+                        <code class="text-green-400">qemu-system-riscv64 ...<br>-append "init=/bin/sh"</code>
+                    </div>
+                </div>
+
+                <!-- Node 4 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-t-4 border-orange-500">
+                    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-orange-600">4</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">服务管理</h4>
+                    <p class="text-sm text-gray-600 mb-3">验证关机/重启命令可正确触发内核关机</p>
+                    <div class="code-block bg-gray-900 p-2 text-xs rounded">
+                        <code class="text-green-400">reboot<br>poweroff<br><span class="text-gray-400"># 应正常关机</span></code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section id="roadmap" class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <span class="text-purple-600 font-semibold">🗺️ 技术路线</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">选择适合你的道路</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    openRuyi 使用 <strong>glibc + RPM</strong> 技术栈。我们推荐优先尝试 glibc 路线，
+                    但选择权完全在你，无论哪条路线，完成试炼都能获得认可！
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Classic Route -->
+                <div class="route-card recommended bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                    <div class="p-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-4xl">📚</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
+                                ⭐ 首推
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">经典路线</h3>
+                        <p class="text-gray-500 mb-4">glibc + SysVinit</p>
+                        <div class="flex items-center text-sm text-gray-600 mb-6">
+                            <i class="far fa-clock mr-2"></i>预计 2-3 天
+                        </div>
+                        <ul class="space-y-3 mb-6 text-sm">
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>glibc 2.40 - openRuyi 核心</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>SysVinit 传统启动</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>GNU coreutils</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>完整网络支持</li>
+                        </ul>
+                        <div class="pt-6 border-t">
+                            <div class="text-sm text-gray-500 mb-2">成功案例</div>
+                            <a href="#" class="text-purple-600 font-semibold hover:underline">Jvlegod 的实践</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Route -->
+                <div class="route-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                    <div class="p-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-4xl">🏭</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+                                进阶
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">完整路线</h3>
+                        <p class="text-gray-500 mb-4">glibc + systemd</p>
+                        <div class="flex items-center text-sm text-gray-600 mb-6">
+                            <i class="far fa-clock mr-2"></i>预计 3-5 天
+                        </div>
+                        <ul class="space-y-3 mb-6 text-sm">
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>glibc 2.42</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>systemd 现代初始化</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>BLFS 扩展</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>接近发行版体验</li>
+                        </ul>
+                        <div class="pt-6 border-t">
+                            <div class="text-sm text-gray-500 mb-2">成功案例</div>
+                            <a href="#" class="text-blue-600 font-semibold hover:underline">purofle 的实践</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fast Route -->
+                <div class="route-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="h-2 bg-gradient-to-r from-green-500 to-teal-500"></div>
+                    <div class="p-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-4xl">🚀</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                                体验
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">极速路线</h3>
+                        <p class="text-gray-500 mb-4">musl + BusyBox</p>
+                        <div class="flex items-center text-sm text-gray-600 mb-6">
+                            <i class="far fa-clock mr-2"></i>预计 20 分钟
+                        </div>
+                        <ul class="space-y-3 mb-6 text-sm">
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>musl 1.2.5 轻量 C 库</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>BusyBox 单二进制</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>全静态链接</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>快速体验 LFS 流程</li>
+                        </ul>
+                        <div class="pt-6 border-t">
+                            <div class="text-sm text-gray-500 mb-2">成功案例</div>
+                            <a href="#" class="text-green-600 font-semibold hover:underline">AvrovaDonz2026 的实践</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="mt-12 overflow-x-auto">
+                <table class="w-full bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-semibold">特性</th>
+                            <th class="px-6 py-4 text-center font-semibold text-purple-600">📚 经典路线</th>
+                            <th class="px-6 py-4 text-center font-semibold text-blue-600">🏭 完整路线</th>
+                            <th class="px-6 py-4 text-center font-semibold text-green-600">🚀 极速路线</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr>
+                            <td class="px-6 py-4">与 openRuyi 相关性</td>
+                            <td class="px-6 py-4 text-center">⭐⭐⭐⭐⭐ 直接相关</td>
+                            <td class="px-6 py-4 text-center">⭐⭐⭐⭐⭐ 最接近目标</td>
+                            <td class="px-6 py-4 text-center">⭐⭐ 仅入门体验</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4">构建复杂度</td>
+                            <td class="px-6 py-4 text-center">⭐⭐⭐ 高</td>
+                            <td class="px-6 py-4 text-center">⭐⭐⭐⭐ 很高</td>
+                            <td class="px-6 py-4 text-center">⭐ 低</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4">rootfs 大小</td>
+                            <td class="px-6 py-4 text-center">~100MB+</td>
+                            <td class="px-6 py-4 text-center">~500MB+</td>
+                            <td class="px-6 py-4 text-center">~2-5MB</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4">推荐度</td>
+                            <td class="px-6 py-4 text-center"><span class="text-green-600 font-bold">首推</span></td>
+                            <td class="px-6 py-4 text-center"><span class="text-green-600 font-bold">首推</span></td>
+                            <td class="px-6 py-4 text-center">可选</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-20 bg-gray-50">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-purple-600 font-semibold">❓ 常见问题</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">遇到问题？这里有答案</h2>
+                <p class="text-gray-600">精选 15+ 个常见问题，基于历届试炼者的实际踩坑经验整理</p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- FAQ Item 1 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q1</span>
+                            <span class="font-semibold">VFS: unable to mount root fs</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>内核缺少 VirtIO 块设备驱动，或 root= 参数与设备名不匹配</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 确保内核配置包含：</span><br>
+CONFIG_VIRTIO_BLK=y<br>
+CONFIG_VIRTIO_PCI=y<br><br>
+<span class="text-green-400"># 检查 QEMU 参数，确保设备名匹配：</span><br>
+-append "root=/dev/vda rw"
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q2</span>
+                            <span class="font-semibold">Chroot 后 "Exec format error"</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>qemu-riscv64-static 未复制到 chroot 环境，或 binfmt_misc 未注册</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 1. 复制 QEMU 解释器</span><br>
+cp /usr/bin/qemu-riscv64-static ${CLFS}/usr/bin/<br><br>
+<span class="text-green-400"># 2. 注册 binfmt_misc</span><br>
+sudo update-binfmts --enable qemu-riscv64
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q3</span>
+                            <span class="font-semibold">BusyBox tc applet 编译失败</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>BusyBox 1.36.1 的 tc applet 与 Linux 6.6.10+ 头文件不兼容</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 禁用 tc applet：</span><br>
+sed -i 's/CONFIG_TC=y/CONFIG_TC=n/' .config
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q4</span>
+                            <span class="font-semibold">musl 动态链接器报 "not found"</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>musl 的动态链接器使用绝对路径 /lib/libc.so，在 chroot 中解析失败</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 修复：使用相对链接</span><br>
+cd ${CLFS}/lib<br>
+ln -sf libc.so ld-musl-riscv64.so.1
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 5 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q5</span>
+                            <span class="font-semibold">程序运行崩溃 / glibc 2.42 兼容性问题</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>glibc 2.42 需要 QEMU 支持 termios2，否则程序会崩溃</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 检查 QEMU 版本</span><br>
+qemu-system-riscv64 --version<br><br>
+<span class="text-green-400"># 解决方案：</span><br>
+<span class="text-yellow-400"># 1. 升级到 QEMU 10.1.2+</span><br>
+<span class="text-yellow-400"># 2. 或使用打补丁的版本</span><br>
+<span class="text-yellow-400"># 3. 临时降级 glibc 到 2.40</span>
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 6 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q6</span>
+                            <span class="font-semibold">进入 chroot 后黑屏一片</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>没有安装 shell（bash 或 busybox ash）</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 先检查 shell 是否存在</span><br>
+test -x ${CLFS}/bin/bash || test -x ${CLFS}/bin/sh || echo "缺少 shell"<br><br>
+<span class="text-green-400"># 确保 /bin/sh 指向可用 shell</span><br>
+ln -sf bash ${CLFS}/bin/sh
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 7 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q7</span>
+                            <span class="font-semibold">内核启动后黑屏/无输出</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>内核未启用串口控制台，或设备树不匹配</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 确保内核配置包含</span><br>
+CONFIG_SERIAL_8250=y<br>
+CONFIG_SERIAL_8250_CONSOLE=y<br>
+CONFIG_HVC_RISCV_SBI=y<br><br>
+<span class="text-green-400"># 启动参数添加 earlycon</span><br>
+-append "earlycon=sbi console=ttyS0"
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 8 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q8</span>
+                            <span class="font-semibold">BusyBox 静态链接失败</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>宿主机启用了栈保护，静态链接时缺少相关库</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 在 BusyBox .config 中添加</span><br>
+CONFIG_EXTRA_CFLAGS="-fno-stack-protector"<br><br>
+<span class="text-green-400"># 或导出环境变量</span><br>
+export CFLAGS="-fno-stack-protector"<br>
+make -j$(nproc)
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 9 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q9</span>
+                            <span class="font-semibold">util-linux 安装报错 "chgrp: Operation not permitted"</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>安装脚本尝试修改文件组，某些环境下权限不足</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 检查必要工具是否已安装</span><br>
+ls -l ${CLFS}/bin/mount<br>
+ls -l ${CLFS}/sbin/agetty<br><br>
+<span class="text-yellow-400"># 如果都存在，可忽略 chgrp 错误</span>
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 10 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q10</span>
+                            <span class="font-semibold">GCC Stage 2 不支持 C++ 线程</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>Stage 2 构建时未启用必要的库</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 配置时确保启用</span><br>
+../configure \
+&nbsp;&nbsp;--enable-languages=c,c++ \
+&nbsp;&nbsp;--enable-shared \
+&nbsp;&nbsp;--enable-threads=posix \
+&nbsp;&nbsp;...
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 11 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q11</span>
+                            <span class="font-semibold">QEMU 中网络不通</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>解决方案：</strong>配置网络设备和驱动</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 1. QEMU 启动参数</span><br>
+-netdev user,id=net0,hostfwd=tcp::2222-:22 \
+-device virtio-net-device,netdev=net0<br><br>
+<span class="text-green-400"># 2. 客户端配置</span><br>
+ip link set dev eth0 up<br>
+dhcpcd eth0<br>
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 12 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q12</span>
+                            <span class="font-semibold">curl 访问 https 报错 SSL 证书问题</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>缺少 CA 根证书</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 编译安装 make-ca 及其依赖</span><br>
+<span class="text-green-400"># 然后更新证书</span><br>
+make-ca -g<br><br>
+<span class="text-yellow-400"># 参考 BLFS: https://linuxfromscratch.org/blfs/view/systemd/postlfs/make-ca.html</span>
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 13 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q13</span>
+                            <span class="font-semibold">pivot_root 失败</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>新 root 不是挂载点，或旧 root 有繁忙的挂载点</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 正确流程：确保新 root 是挂载点</span><br>
+mount --bind ${NEW_ROOT} ${NEW_ROOT}<br>
+pivot_root ${NEW_ROOT} ${NEW_ROOT}/mnt<br><br>
+<span class="text-green-400"># 或使用 switch_root（BusyBox 提供）</span><br>
+switch_root /newroot /sbin/init
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 14 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q14</span>
+                            <span class="font-semibold">/bin/sh: can't access tty; job control turned off</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>在裸串口控制台上运行时，shell 无法进行作业控制</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-yellow-400"># 这是预期行为，可以忽略</span><br><br>
+<span class="text-green-400"># 如需消除警告，确保</span><br>
+ls -la ${CLFS}/dev/console  # 应该有 c 5 1<br>
+exec /bin/sh -l  # 使用登录 shell
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 15 -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-sm">Q15</span>
+                            <span class="font-semibold">configure 报错 "cannot guess build type"</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform"></i>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-4">
+                        <div class="pl-11 text-gray-600 space-y-3">
+                            <p><strong>原因：</strong>config.guess/config.sub 太旧，或 --build/--host 参数填反</p>
+                            <div class="code-block p-3 text-sm">
+                                <code>
+<span class="text-green-400"># 更新 config.guess/config.sub</span><br>
+<span class="text-green-400"># 确保 --build 是宿主机架构</span><br>
+./configure \
+&nbsp;&nbsp;--build="$(gcc -dumpmachine)" \
+&nbsp;&nbsp;--host=riscv64-unknown-linux-gnu \
+&nbsp;&nbsp;...
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <p class="text-gray-500 mb-4">更多问题请查看完整 FAQ 文档</p>
+                <a href="FAQ.md" class="inline-flex items-center text-purple-600 font-semibold hover:underline">
+                    查看完整 FAQ <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Troubleshooting Table -->
+    <section class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-red-600 font-semibold">🐛 常见故障速查</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">快速问题定位表</h2>
+                <p class="text-gray-600">对照症状，快速找到解决方案</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <thead class="bg-gray-900 text-white">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-semibold">故障现象</th>
+                            <th class="px-6 py-4 text-left font-semibold">根本原因</th>
+                            <th class="px-6 py-4 text-left font-semibold">修复方法</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr class="hover:bg-red-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-red-700">VFS: unable to mount root</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">缺少 CONFIG_VIRTIO_BLK</td>
+                            <td class="px-6 py-4 text-sm"><code class="bg-gray-100 px-2 py-1 rounded">dmesg | grep virtio</code></td>
+                        </tr>
+                        <tr class="hover:bg-red-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-red-700">Exec format error</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">qemu-static 未复制或 binfmt 未注册</td>
+                            <td class="px-6 py-4 text-sm">验证复制和注册步骤</td>
+                        </tr>
+                        <tr class="hover:bg-red-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-red-700">not found (文件存在)</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">动态链接器路径错误</td>
+                            <td class="px-6 py-4 text-sm"><code class="bg-gray-100 px-2 py-1 rounded">readelf -l | grep interpreter</code></td>
+                        </tr>
+                        <tr class="hover:bg-red-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-red-700">内核启动后崩溃</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">设备树不匹配或缺少串口配置</td>
+                            <td class="px-6 py-4 text-sm">添加 <code class="bg-gray-100 px-2 py-1 rounded">earlycon=sbi</code></td>
+                        </tr>
+                        <tr class="hover:bg-orange-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-orange-700">BusyBox tc 编译失败</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">TCA_CBQ_MAX 未声明</td>
+                            <td class="px-6 py-4 text-sm">禁用 CONFIG_TC</td>
+                        </tr>
+                        <tr class="hover:bg-orange-50 transition-colors">
+                            <td class="px-6 py-4 font-medium text-orange-700">chroot 黑屏</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">未安装 bash</td>
+                            <td class="px-6 py-4 text-sm">chroot 前必须先安装 bash</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section class="py-16 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-purple-600 font-semibold">📖 拓展资源</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">深入学习资料</h2>
+                <p class="text-gray-600">想深入学习？这些资源会助你一臂之力</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <a href="https://trac.clfs.org/" target="_blank" class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all group">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-book text-blue-600 group-hover:text-white text-xl"></i>
+                    </div>
+                    <h4 class="font-bold mb-2">CLFS 项目</h4>
+                    <p class="text-sm text-gray-600">Cross Linux From Scratch 官方指南</p>
+                </a>
+
+                <a href="https://linuxfromscratch.org/lfs/view/stable/" target="_blank" class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all group">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-600 transition-colors">
+                        <i class="fas fa-compass text-green-600 group-hover:text-white text-xl"></i>
+                    </div>
+                    <h4 class="font-bold mb-2">LFS 手册</h4>
+                    <p class="text-sm text-gray-600">Linux From Scratch 权威文档</p>
+                </a>
+
+                <a href="https://risc-v-machines.readthedocs.io/" target="_blank" class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all group">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 transition-colors">
+                        <i class="fas fa-microchip text-purple-600 group-hover:text-white text-xl"></i>
+                    </div>
+                    <h4 class="font-bold mb-2">RISC-V Machines</h4>
+                    <p class="text-sm text-gray-600">RISC-V 虚拟化参考</p>
+                </a>
+
+                <a href="https://github.com/richfelker/musl-cross-make" target="_blank" class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all group">
+                    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-600 transition-colors">
+                        <i class="fas fa-tools text-orange-600 group-hover:text-white text-xl"></i>
+                    </div>
+                    <h4 class="font-bold mb-2">musl-cross-make</h4>
+                    <p class="text-sm text-gray-600">轻量级工具链方案</p>
+                </a>
+            </div>
+
+            <!-- BLFS Reference -->
+            <div class="mt-8 bg-white rounded-2xl p-8 shadow-sm">
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-layer-group text-indigo-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2">Beyond Linux From Scratch (BLFS)</h4>
+                        <p class="text-gray-600 mb-4">在完成基础 LFS 后，可以参考 BLFS 添加更多软件包：</p>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">dhcpcd</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">iproute2</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">curl</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">make-ca</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">cmake</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">git</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">sudo</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">vim</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scroll Template Section -->
+    <section id="template" class="py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-purple-600 font-semibold">📜 卷轴模板</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">Scroll Template</h2>
+                <p class="text-gray-600">提交 PR 时必须使用的模板，复制后按实际情况填写</p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="bg-gray-800 text-white px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i class="fab fa-markdown text-xl"></i>
+                        <span class="font-mono text-sm">submissions/&lt;githubid&gt;.md</span>
+                    </div>
+                    <button onclick="copyTemplate()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2">
+                        <i class="fas fa-copy"></i>
+                        <span>复制模板</span>
+                    </button>
+                </div>
+                <div class="p-6 bg-gray-50 overflow-x-auto">
+                    <pre id="scroll-template" class="text-sm text-gray-800 font-mono leading-relaxed">
+# &lt;githubid&gt; 的试炼记录
+
+## 基本信息
+
+- GitHub ID: &lt;githubid&gt;
+- 联系邮箱: &lt;email&gt;
+- rootfs 发布 Repo: https://github.com/&lt;you&gt;/&lt;repo&gt;
+
+## Rootfs 资产
+
+- 文件名: rootfs-riscv64-lfs-&lt;githubid&gt;.tar.zst
+- SHA256: &lt;sha256&gt;
+
+## 如何从 rootfs 运行起来
+
+&gt; 目标：从"下载 rootfs"到"进入环境并跑起 fastfetch/neofetch"的最短步骤。
+
+### 方式 1
+
+1. ...
+
+&lt;!-- 可选区 --&gt;
+
+## fastfetch / neofetch 证据
+
+&lt;!-- 此处插入截图（可选） --&gt;
+
+## 这是如何锻造的（LFS 过程简述）
+
+- 参考的教程/版本:
+- 关键配置（toolchain / glibc / 内核 / init / busybox / 包策略等）:
+- 与"原教旨 LFS"的偏离（如有）:
+
+## 你踩过的坑
+
+- 坑 1: ...
+- 坑 2: ...
+
+## 已知问题 / TODO（如有）
+
+- ...
+
+## 安全声明
+
+- 我确认 rootfs 不包含任何密钥/Token/SSH Key/凭据/私人数据。</pre>
+                </div>
+            </div>
+
+            <!-- Template Guide -->
+            <div class="mt-8 grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                    </div>
+                    <h4 class="font-bold mb-2">必须包含</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• 基本信息（GitHub ID、邮箱、Release 链接）</li>
+                        <li>• Rootfs SHA256 校验值</li>
+                        <li>• "如何运行"详细步骤</li>
+                        <li>• 安全声明</li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-lightbulb text-green-600"></i>
+                    </div>
+                    <h4 class="font-bold mb-2">推荐包含</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• LFS 构建过程简述</li>
+                        <li>• 踩坑记录</li>
+                        <li>• 关键组件版本</li>
+                        <li>• fastfetch/neofetch 截图</li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-sm">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-file-signature text-purple-600"></i>
+                    </div>
+                    <h4 class="font-bold mb-2">文件规范</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• 文件名: <code>&lt;githubid&gt;.md</code></li>
+                        <li>• 位置: <code>submissions/</code> 目录</li>
+                        <li>• 格式: Markdown</li>
+                        <li>• 编码: UTF-8</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- GitHub Repo Reminder -->
+            <div class="mt-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 text-white">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center space-x-4">
+                        <i class="fab fa-github text-4xl"></i>
+                        <div>
+                            <h4 class="font-bold text-lg">准备好了吗？</h4>
+                            <p class="text-purple-100 text-sm">Fork 仓库并提交你的试炼卷轴</p>
+                        </div>
+                    </div>
+                    <a href="https://github.com/openRuyi-Project/RISC-V-From-Scratch/fork" target="_blank"
+                       class="px-6 py-3 bg-white text-purple-600 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center space-x-2">
+                        <i class="fas fa-code-branch"></i>
+                        <span>Fork 仓库</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Submission Steps -->
+            <div class="mt-8 bg-white rounded-2xl p-8 shadow-sm">
+                <h3 class="text-xl font-bold mb-6">📋 提交流程</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">1</div>
+                        <div>
+                            <h4 class="font-semibold">创建卷轴文件</h4>
+                            <p class="text-sm text-gray-600">复制上方模板到 <code>submissions/&lt;你的GitHubID&gt;.md</code></p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">2</div>
+                        <div>
+                            <h4 class="font-semibold">填写内容</h4>
+                            <p class="text-sm text-gray-600">按照模板要求填写所有信息，确保准确无误</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">3</div>
+                        <div>
+                            <h4 class="font-semibold">添加截图（可选）</h4>
+                            <p class="text-sm text-gray-600">将 fastfetch/neofetch 截图放入 <code>evidence/&lt;你的GitHubID&gt;/fastfetch.png</code></p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">4</div>
+                        <div>
+                            <h4 class="font-semibold">提交 PR</h4>
+                            <p class="text-sm text-gray-600">Fork 本仓库，提交你的卷轴，等待审核合并</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Checklist Section -->
+    <section id="checklist" class="py-20 bg-white">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-purple-600 font-semibold">✅ 通关检查清单</span>
+                <h2 class="text-4xl font-bold mt-2 mb-4">提交前逐项确认</h2>
+                <p class="text-gray-600">确保你的提交符合所有要求，顺利通过审核</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Build Verification -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8">
+                    <h3 class="text-xl font-bold mb-6 flex items-center">
+                        <span class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center text-white mr-3">
+                            <i class="fas fa-hammer"></i>
+                        </span>
+                        构建验证
+                    </h3>
+                    <div class="space-y-3">
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-purple-600 rounded">
+                            <span class="text-gray-700">交叉编译器可生成 riscv64 可执行文件</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-purple-600 rounded">
+                            <span class="text-gray-700">C 库已正确安装</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-purple-600 rounded">
+                            <span class="text-gray-700">BusyBox/coreutils 已安装且可执行</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-purple-600 rounded">
+                            <span class="text-gray-700">基本目录结构完整</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Boot Verification -->
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8">
+                    <h3 class="text-xl font-bold mb-6 flex items-center">
+                        <span class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white mr-3">
+                            <i class="fas fa-power-off"></i>
+                        </span>
+                        启动验证
+                    </h3>
+                    <div class="space-y-3">
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-blue-600 rounded">
+                            <span class="text-gray-700">可以使用 initramfs 启动</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-blue-600 rounded">
+                            <span class="text-gray-700">可以使用磁盘镜像启动</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-blue-600 rounded">
+                            <span class="text-gray-700">Shell 可以正常运行</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-blue-600 rounded">
+                            <span class="text-gray-700">可以正常关机/重启</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Packaging -->
+                <div class="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-8">
+                    <h3 class="text-xl font-bold mb-6 flex items-center">
+                        <span class="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center text-white mr-3">
+                            <i class="fas fa-box"></i>
+                        </span>
+                        打包验证
+                    </h3>
+                    <div class="space-y-3">
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-green-600 rounded">
+                            <span class="text-gray-700">文件名符合规范 (rootfs-riscv64-lfs-&lt;githubid&gt;.tar.zst)</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-green-600 rounded">
+                            <span class="text-gray-700">关键文件存在 (/bin/sh, /init)</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-green-600 rounded">
+                            <span class="text-gray-700">SHA256 校验值已计算</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div class="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-8">
+                    <h3 class="text-xl font-bold mb-6 flex items-center">
+                        <span class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white mr-3">
+                            <i class="fas fa-file-alt"></i>
+                        </span>
+                        文档检查
+                    </h3>
+                    <div class="space-y-3">
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-orange-600 rounded">
+                            <span class="text-gray-700">GitHub ID 和联系邮箱正确</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-orange-600 rounded">
+                            <span class="text-gray-700">提供了完整的运行指南</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-orange-600 rounded">
+                            <span class="text-gray-700">包含安全声明</span>
+                        </label>
+                        <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-orange-600 rounded">
+                            <span class="text-gray-700">fastfetch/neofetch 截图</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Check -->
+            <div class="mt-8 bg-red-50 border border-red-200 rounded-2xl p-8">
+                <h3 class="text-xl font-bold mb-4 flex items-center text-red-700">
+                    <i class="fas fa-shield-alt mr-3"></i>
+                    安全检查（必须）
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                        <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                        <span class="text-gray-700">不包含 SSH 私钥</span>
+                    </label>
+                    <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                        <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                        <span class="text-gray-700">不包含 Git 凭证</span>
+                    </label>
+                    <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                        <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                        <span class="text-gray-700">不包含 API Token</span>
+                    </label>
+                    <label class="checklist-item flex items-start space-x-3 cursor-pointer">
+                        <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                        <span class="text-gray-700">不包含云服务配置</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Stories -->
+    <!-- Floating GitHub Button -->
+    <a href="https://github.com/openRuyi-Project/RISC-V-From-Scratch" target="_blank"
+       class="fixed bottom-8 right-8 z-40 w-14 h-14 bg-gray-900 hover:bg-purple-600 rounded-full shadow-lg flex items-center justify-center text-white transition-all hover:scale-110 group">
+        <i class="fab fa-github text-2xl"></i>
+        <span class="absolute right-full mr-3 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            查看 GitHub 仓库
+        </span>
+    </a>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 text-gray-400 py-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 text-white mb-4">
+                        <i class="fas fa-microchip text-2xl text-purple-600"></i>
+                        <span class="font-bold text-xl">RISC-V From Scratch</span>
+                    </div>
+                    <p class="text-sm">
+                        openRuyi 新手村 - 从零构建 riscv64 Linux 系统的试炼之旅
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">文档</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="readme.md" class="hover:text-white transition-colors">新手村总览</a></li>
+                        <li><a href="ROADMAP.md" class="hover:text-white transition-colors">路线指南</a></li>
+                        <li><a href="FAQ.md" class="hover:text-white transition-colors">常见问题</a></li>
+                        <li><a href="#template" class="hover:text-white transition-colors">提交模板</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">资源</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="CHECKLIST.md" class="hover:text-white transition-colors">检查清单</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">链接</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li>
+                            <a href="https://github.com/openRuyi-Project/RISC-V-From-Scratch" target="_blank" 
+                               class="hover:text-white transition-colors flex items-center">
+                                <i class="fab fa-github mr-2"></i>GitHub 仓库
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/openRuyi-Project" target="_blank" 
+                               class="hover:text-white transition-colors">
+                                openRuyi 组织
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                <p>
+                    &copy; 2026 openRuyi Project. 文档由 
+                    <strong class="text-white">Avrova Donz</strong> 
+                    借助 ChatGPT 5.3 完成。
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // FAQ Toggle
+        document.querySelectorAll('.faq-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('.fa-chevron-down');
+                
+                content.classList.toggle('hidden');
+                icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+        });
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Checklist localStorage
+        document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach((checkbox, index) => {
+            const saved = localStorage.getItem(`checklist-${index}`);
+            if (saved === 'true') checkbox.checked = true;
+            
+            checkbox.addEventListener('change', () => {
+                localStorage.setItem(`checklist-${index}`, checkbox.checked);
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('shadow-md');
+            } else {
+                nav.classList.remove('shadow-md');
+            }
+        });
+
+        // Copy Template Function
+        function copyTemplate() {
+            const template = document.getElementById('scroll-template').innerText;
+            navigator.clipboard.writeText(template).then(() => {
+                const btn = document.querySelector('button[onclick="copyTemplate()"]');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i><span>已复制!</span>';
+                btn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    btn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制');
+            });
+        }
+    </script>
+</body>
+</html>

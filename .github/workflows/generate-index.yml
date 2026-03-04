@@ -41,7 +41,7 @@ jobs:
       - name: Upload index.html artifact
         uses: actions/upload-artifact@v4
         with:
-          name: generated-index-html
+          name: index.html
           path: index.html
           if-no-files-found: error
           retention-days: 14

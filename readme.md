@@ -74,7 +74,7 @@ RISC-V-From-Scratch/
 - 工作流：`.github/workflows/generate-index.yml`
 - 生成脚本：`.scripts/generate_index.py`
 - 触发条件：`readme.md`、`ROADMAP.md`、`FAQ.md`、`CHECKLIST.md`、`README.zh-CN.md` 变更后自动生成
-- 输出方式：在 GitHub Actions 运行结果中下载 `generated-index-html` 产物（包含 `index.html`）
+- 输出方式：在 GitHub Actions 运行结果中下载 `index.html` 产物（包含 `index.html`）
 
 本地手动生成：
 

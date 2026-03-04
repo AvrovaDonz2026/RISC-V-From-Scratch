@@ -69,6 +69,20 @@ RISC-V-From-Scratch/
 
 > 卷轴模板以本页内嵌模板为主，同时保留 `README.zh-CN.md` 作为唯一独立模板文件。
 
+### 🤖 index.html 自动生成（Action 产物）
+
+- 工作流：`.github/workflows/generate-index.yml`
+- 生成脚本：`.scripts/generate_index.py`
+- 触发条件：`readme.md`、`ROADMAP.md`、`FAQ.md`、`CHECKLIST.md`、`README.zh-CN.md` 变更后自动生成
+- 输出方式：在 GitHub Actions 运行结果中下载 `generated-index-html` 产物（包含 `index.html`）
+
+本地手动生成：
+
+```bash
+python3 -m pip install markdown
+python3 .scripts/generate_index.py --output index.html
+```
+
 ### ⚡ 推荐阅读与执行顺序
 
 | 顺序 | 文档/目录 | 作用 |

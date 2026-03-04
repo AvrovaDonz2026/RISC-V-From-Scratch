@@ -35,6 +35,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install markdown
 
+      - name: Archive current index.html
+        run: |
+          test -f index.html
+          python - <<'PY'
+          import zipfile
+          with zipfile.ZipFile("index.html.zip", "w", compression=zipfile.ZIP_DEFLATED) as zf:
+              zf.write("index.html", arcname="index.html")
+          PY
+
       - name: Generate index.html
         run: python .scripts/generate_index.py --output index.html
 
@@ -42,6 +51,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: index.html
-          path: index.html
+          path: |
+            index.html
+            index.html.zip
           if-no-files-found: error
           retention-days: 14

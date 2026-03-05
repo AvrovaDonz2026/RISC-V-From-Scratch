@@ -143,6 +143,10 @@ def build_html(root: Path) -> str:
       align-items: center;
       justify-content: space-between;
     }}
+    .mobile-menu {{
+      display: none;
+      position: relative;
+    }}
     .title {{
       font-weight: 700;
       font-size: 18px;
@@ -205,36 +209,62 @@ def build_html(root: Path) -> str:
       color: var(--muted);
       font-size: 13px;
     }}
-    .mobile-toc {{
+    .mobile-menu > summary {{
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+    }}
+    .mobile-menu > summary:hover {{
+      color: var(--accent);
+      border-color: var(--accent);
+    }}
+    .mobile-menu[open] > summary {{
+      color: var(--accent);
+      border-color: var(--accent);
+      background: #f0fdfa;
+    }}
+    .mobile-menu > summary::-webkit-details-marker {{
       display: none;
-      margin-bottom: 12px;
+    }}
+    .mobile-menu-panel {{
+      position: absolute;
+      right: 0;
+      top: 44px;
+      width: min(82vw, 320px);
+      max-height: 62vh;
+      overflow: auto;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: #fff;
-      overflow: hidden;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.16);
+      padding: 8px;
+      z-index: 40;
     }}
-    .mobile-toc > summary {{
-      cursor: pointer;
-      padding: 10px 12px;
-      font-weight: 600;
-      list-style: none;
-      user-select: none;
-      border-bottom: 1px solid transparent;
+    .mobile-menu-title {{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 2px 4px 8px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }}
-    .mobile-toc[open] > summary {{
-      border-bottom-color: var(--border);
-      background: #f8fafc;
-    }}
-    .mobile-toc > summary::-webkit-details-marker {{
-      display: none;
-    }}
-    .mobile-toc-nav {{
+    .mobile-menu-nav {{
       display: flex;
       flex-direction: column;
-      padding: 8px;
       gap: 4px;
     }}
-    .mobile-toc-nav a {{
+    .mobile-menu-nav a {{
       text-decoration: none;
       color: var(--text);
       font-size: 14px;
@@ -242,10 +272,26 @@ def build_html(root: Path) -> str:
       border-radius: 10px;
       border: 1px solid transparent;
     }}
-    .mobile-toc-nav a:hover {{
+    .mobile-menu-nav a:hover {{
       color: var(--accent);
       border-color: var(--border);
       background: #f8fafc;
+    }}
+    .mobile-menu-nav a:active {{
+      background: #ecfeff;
+    }}
+    .mobile-menu-backdrop {{
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+    }}
+    .mobile-menu[open] .mobile-menu-backdrop {{
+      display: block;
+    }}
+    .mobile-menu-content {{
+      position: relative;
+      z-index: 40;
     }}
     .doc-card {{
       background: var(--card);
@@ -349,7 +395,7 @@ def build_html(root: Path) -> str:
       .sidebar {{
         display: none;
       }}
-      .mobile-toc {{
+      .mobile-menu {{
         display: block;
       }}
     }}
@@ -371,6 +417,18 @@ def build_html(root: Path) -> str:
   <header class="topbar">
     <div class="topbar-inner">
       <div class="title">RISC-V From Scratch 文档站</div>
+      <details class="mobile-menu">
+        <summary aria-label="打开目录" title="目录">☰</summary>
+        <div class="mobile-menu-backdrop"></div>
+        <div class="mobile-menu-content">
+          <div class="mobile-menu-panel">
+            <div class="mobile-menu-title">目录</div>
+            <nav class="mobile-menu-nav">
+              {side_nav_html}
+            </nav>
+          </div>
+        </div>
+      </details>
     </div>
   </header>
 
@@ -384,12 +442,6 @@ def build_html(root: Path) -> str:
       </div>
     </aside>
     <section class="content">
-      <details class="mobile-toc">
-        <summary>目录</summary>
-        <nav class="mobile-toc-nav">
-          {side_nav_html}
-        </nav>
-      </details>
       <div class="banner">
         本页由 <code>.scripts/generate_index.py</code> 自动生成。生成时间：{generated_at}
       </div>

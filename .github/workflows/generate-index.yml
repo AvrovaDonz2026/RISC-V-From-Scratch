@@ -1,4 +1,4 @@
-name: Generate index.html from Markdown
+name: Build and Deploy Docs to GitHub Pages
 
 on:
   workflow_dispatch:
@@ -17,9 +17,15 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  build-index:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,10 +44,27 @@ jobs:
       - name: Generate index.html
         run: python .scripts/generate_index.py --output index.html
 
-      - name: Upload index.html artifact
-        uses: actions/upload-artifact@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p _site
+          cp index.html _site/index.html
+          touch _site/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: generated-index-html
-          path: index.html
-          if-no-files-found: error
-          retention-days: 14
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

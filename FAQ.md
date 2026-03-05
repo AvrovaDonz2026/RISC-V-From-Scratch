@@ -560,7 +560,15 @@ make-ca -g
 **实际数据**：
 | 同学 | C库 | Init | 大小 |
 |------|-----|------|------|
+| AvrovaDonz2026 | musl | BusyBox + `/init` | ~2MB |
+| Jvlegod | glibc | SysVinit | 未标注 |
 | purofle | glibc | systemd | ~500MB+ |
+
+> 说明：
+> - 历史数据会保留，不因默认路线调整而删除。
+> - 当前新人默认指导仍是 `glibc + systemd`。
+> - `SysVinit` 仅作为历史完成记录保留；当前 LFS 官方主线已放弃对 `SysVinit` 路线的支持。
+> - 若选择花活路线（例如切换 libc 或 1 号进程），可以提交，但请在卷轴中明确写清与默认主线的差异、额外步骤、风险与回滚。
 
 **优化**：
 ```bash

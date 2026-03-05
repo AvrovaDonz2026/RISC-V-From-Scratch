@@ -213,6 +213,8 @@ def build_html(root: Path) -> str:
       cursor: pointer;
       list-style: none;
       user-select: none;
+      position: relative;
+      z-index: 80;
       width: 36px;
       height: 36px;
       display: flex;
@@ -250,7 +252,7 @@ def build_html(root: Path) -> str:
       background: #fff;
       box-shadow: 0 10px 26px rgba(15, 23, 42, 0.16);
       padding: 8px;
-      z-index: 40;
+      z-index: 70;
     }}
     .mobile-menu-title {{
       font-size: 12px;
@@ -284,14 +286,14 @@ def build_html(root: Path) -> str:
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 30;
+      z-index: 60;
     }}
     .mobile-menu[open] .mobile-menu-backdrop {{
       display: block;
     }}
     .mobile-menu-content {{
       position: relative;
-      z-index: 40;
+      z-index: 70;
     }}
     .doc-card {{
       background: var(--card);
@@ -448,6 +450,27 @@ def build_html(root: Path) -> str:
       {''.join(section_items)}
     </section>
   </main>
+  <script>
+    (() => {{
+      const menu = document.querySelector('.mobile-menu');
+      if (!menu) return;
+
+      const closeMenu = () => menu.removeAttribute('open');
+
+      const backdrop = menu.querySelector('.mobile-menu-backdrop');
+      if (backdrop) {{
+        backdrop.addEventListener('click', closeMenu);
+      }}
+
+      menu.querySelectorAll('.mobile-menu-nav a').forEach((link) => {{
+        link.addEventListener('click', closeMenu);
+      }});
+
+      document.addEventListener('keydown', (event) => {{
+        if (event.key === 'Escape') closeMenu();
+      }});
+    }})();
+  </script>
 </body>
 </html>
 """
